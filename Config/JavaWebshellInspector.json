@@ -1,0 +1,15 @@
+{
+	"samples": [
+		"..\\Samples\\jsp"
+	],
+
+	"features":[
+		"getParameter", "getHeader", 
+		"getRealPath", "getRequestURI", "getParent", 
+		"getProperty", "getServerInfo",
+		"Process", "ProcessBuilder", "Runtime", "getRuntime", "Scanner", "getInputStream", "getOutputStream", ".start", ".exec", 
+		"jython", "DefaultConsoleImpl", "PythonInterpreter", 
+		"BASE64Decoder", 
+		"FileReader", "PrintWriter", "FileOutputStream", "RandomAccessFile", ".write", ".print", ".println", "FileHandler", "Logger", "sendRedirect",  "InetAddress", "net.URL", "Socket", "SocketChannel"
+	]
+}

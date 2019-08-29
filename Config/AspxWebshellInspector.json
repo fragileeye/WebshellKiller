@@ -1,0 +1,14 @@
+{
+	"samples": [
+		"..\\Samples\\aspx"
+	],
+
+	"features":[
+		"Request", "eval", "unsafe", 
+		"CreateObject", "exec", "runat",
+		"Process", "StandardInput", "StandardOutput", 
+		"FileInfo", "StreamWriter", "FileStream", "SaveAs", "Server.MapPath", "write", 
+		"Assembly.Load", "Request.BinaryRead", "CreateInstance", 
+		"Aspxspy", "FromBase64String"
+	]
+}
