@@ -1,4 +1,4 @@
-##（一）相关申明：
+##（一）相关明：
     
     1）目前Webshell的检测方法，有基于hook、统计、正则、模糊哈希、Simhash、机器学习甚至是深度学习，对了，还有AST。其中各个方法都有自己的优势，有兴趣可以查阅下相关研究。其中基于正则和Simhash的方法依赖比较少，也更方便实现的。该二者的特点是，正则检测深度大，但容易出现误报的情况，而且针对Webshell的变形是很难处理的，需要人工进行较多的干预；Simhash等特征匹配算法，特征给的准，精度要高，与基于算法类的检测方法类似，都需要较多样本。
     
@@ -28,4 +28,6 @@
 	1）WebshellInspector依赖Simhash模块，安装使用命令 pip install Simhash 即可
 	2）WebshellKiller依赖Python Yara模块，安装使用命令 pip install yara-python 即可
 	3）WebshellMonitor依赖WatchDog模块，安装使用命令 pip install watchdog 即可
+       
+
        
