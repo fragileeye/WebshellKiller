@@ -20,6 +20,7 @@
 	* WebshellKiller.py 采用yara规则匹配，检测速度较快，通过完善yara规则，查杀广度大，但容易误报。暴露有接口，也简单，开袋即食;
 	* WebshellMonitor.py 基于WatchDog的文件监控，提供实时的Webshell监控(检测基于a/b）
 	* WebshellObserver.py 研究了NeoPI代码和文章，由于NeoPI是Python2实现的，而且复用性比较低，改写了下;暴露有接口，也简单，开袋即食;
+	* WebshellDetector.py基于Inspector和Killer，针对多种格式的Webshell进行检测，同时统一了调用接口。
 + Test: 可以将文件拷贝至Test目录，用于测试Monitor实时监控的功能
 
 
@@ -28,6 +29,7 @@
 + `WebshellInspector`依赖`Simhash`模块，安装使用命令 ***pip install Simhash*** 即可
 + `WebshellKiller`依赖`Python Yara`模块，安装使用命令 ***pip install yara-python*** 即可
 + `WebshellMonitor`依赖`WatchDog`模块，安装使用命令 ***pip install watchdog*** 即可
++ `WebshellDetector`简化了`WebshellInspector`和`WebshellKiller`的使用，尤其是**无差别检测(jsp, aspx, php)**
 
 四、其他说明
 ---
