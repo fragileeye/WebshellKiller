@@ -102,26 +102,29 @@ class WebshellInspector:
         else:
             return data
     
+    def _detect_internal(self, fpath):
+        with open(fpath, 'rb') as fp:
+            detect_result = dict()
+            hash_set = self._load_features_from_file(fp)
+            hash_result = simhash.Simhash(hash_set)
+            matched_samples = self.detector.get_near_dups(hash_result)
+            if len(matched_samples) > 0:
+                detect_messgae = '[Webshell] > {0} with matches: {1}'.format(fpath, matched_samples)
+                self.cmdx_logger.warning(detect_messgae)
+                self.file_logger.warning(detect_messgae + '\r\n')
+                detect_result[fpath] = True
+            else:
+                detect_messgae = 'NormalPage > {0}.'.format(fpath)
+                self.cmdx_logger.info(detect_messgae) 
+                detect_result[fpath] = False
+            return detect_result   #A dict which key means file path and value is a bool value.
+
     def detect_file(self, fpath):
         if not self._init_done: 
             return None
         try:
             fpath = os.path.abspath(fpath)
-            with open(fpath, 'rb') as fp:
-                detect_result = dict()
-                hash_set = self._load_features_from_file(fp)
-                hash_result = simhash.Simhash(hash_set)
-                matched_samples = self.detector.get_near_dups(hash_result)
-                if len(matched_samples) > 0:
-                    detect_messgae = '[Webshell] > {0} with matches: {1}'.format(fpath, matched_samples)
-                    self.cmdx_logger.warning(detect_messgae)
-                    self.file_logger.warning(detect_messgae + '\r\n')
-                    detect_result[fpath] = True
-                else:
-                    detect_messgae = 'NormalPage > {0}.'.format(fpath)
-                    self.cmdx_logger.info(detect_messgae) 
-                    detect_result[fpath] = False
-                return detect_result #A dict which key means file path and value is a bool value.
+            return self._detect_internal(fpath)
         except:
             return None
         
