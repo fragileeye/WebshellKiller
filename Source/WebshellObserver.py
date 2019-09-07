@@ -30,7 +30,9 @@ class BaseCalculator(metaclass=abc.ABCMeta):
     
     def calc_from_file(self, fpath):
         with open(fpath, 'rb') as fp:
-            return self.calc_from_data(fp.read())
+            calc_result = self.calc_from_data(fp.read())
+            calc_result = round(calc_result, 3)
+            return calc_result
         
     def _calc_from_alldir(self, dpath):
         for root, dirs, files in os.walk(dpath):
@@ -39,6 +41,7 @@ class BaseCalculator(metaclass=abc.ABCMeta):
                 if not self.valid_file(fpath):
                     continue
                 calc_result = self.calc_from_file(fpath)
+                calc_result = round(calc_result, 3)
                 self.result_dict[fpath] = calc_result
                 
     def _calc_from_curdir(self, dpath):
@@ -48,12 +51,13 @@ class BaseCalculator(metaclass=abc.ABCMeta):
                 if not self.valid_file(fpath):
                     continue                
                 calc_result = self.calc_from_file(fpath)
+                calc_result = round(calc_result, 3)
                 self.result_dict[fpath] = calc_result                
                 
     def calc_from_directory(self, dpath, recursive=False, reverse=True):
         self._reset()
         if not os.path.isdir(dpath):
-            return result_dict
+            return self.result_dict
         if recursive:
             self._calc_from_alldir(dpath)
         else:
@@ -128,7 +132,7 @@ class Compression(BaseCalculator):
         return compressed_ratio
     
 if __name__ == '__main__':
-    exp_directory = r"D:\git\NeoPI"
+    exp_directory = r"D:\Python代码\webshell检测\代码\Flask\samples\jsp"
     ic = LanguageIC()
     ic.calc_from_directory(exp_directory, reverse=False)
     ic.show_message()

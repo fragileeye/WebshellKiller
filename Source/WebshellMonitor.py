@@ -22,6 +22,7 @@ from WebshellKiller import WebshellKiller
 
 MONITOR_TYPELIST = ['*.JSP', '*.JSPX', '*.ASHX', '*.ASPX', '*.PHP'] 
 MONITOR_INTERVAL = 3 #To ignore the file change event repeatly with this interval 
+SLEEP_INTERVAL_S = 0.01
 MONITOR_CACHESIZE = 1024
 
 class WebshellMonitor(threading.Thread):
@@ -30,12 +31,13 @@ class WebshellMonitor(threading.Thread):
     # monitor_level    : 0 means we would call WebshellInspector to detect otherwise
     # call WebshellKiller to detect if set 1
     
-    def __init__(self, monitor_directory, monitor_level):
+    def __init__(self, monitor_directory, monitor_level=1):
         super().__init__()
         self.monitor_directory = monitor_directory
         self.monitor_container = queue.Queue(1024) 
         self.monitor_observer  = self._init_observer();
         self.monitor_executive = self._init_executive(monitor_level);
+        self.mointor_terminate = False
         self._init_cache_manager()
     
     def _init_cache_manager(self):
@@ -54,7 +56,7 @@ class WebshellMonitor(threading.Thread):
         self.cache[file_path] = curr_time
         return True
         
-    def _init_executive(self, monitor_level):
+    def _init_executive(self, monitor_level=1):
         if monitor_level == 1: 
             self.JExecutive = self._init_killer('Java')
             self.AExecutive = self._init_killer('Aspx')
@@ -90,23 +92,35 @@ class WebshellMonitor(threading.Thread):
             file_extension = os.path.splitext(file_path)[-1]
             indicator = file_extension[1].upper()
             executive = self.monitor_executive[indicator]
-            executive.detect(file_path)
+            while True:
+                detect_result = executive.detect(file_path)
+                if not detect_result:
+                    time.sleep(SLEEP_INTERVAL_S)
+                else:
+                    break
         
     def run(self):
         if not self.monitor_executive:
             return
         self.monitor_observer.start()
-        while True:
+        while not self.mointor_terminate:
             monitor_item = self.monitor_container.get()
             self.detect(monitor_item)    
             self.monitor_container.task_done()
-        self.monitor_observer.join()        
+        self.monitor_observer.join()     
+        self.monitor_observer.stop()
     
+    def stop(self):
+        self.mointor_terminate = True
+        
 class MonitorEventHandler(PatternMatchingEventHandler):
     def __init__(self, monitor_container):
         super().__init__(patterns=MONITOR_TYPELIST)
         self.monitor_container = monitor_container
-        
+    
+    def on_any_event(self, event):
+        pass
+    
     #actually we just need to monitor the action of file `modified` and `moved` 
     def on_modified(self, event):
         monitor_item = (event.src_path, time.time())
@@ -117,7 +131,7 @@ class MonitorEventHandler(PatternMatchingEventHandler):
         self.monitor_container.put(monitor_item)
 
 if __name__ == '__main__':
-    monitor = WebshellMonitor('..\\Test', 1)
+    monitor = WebshellMonitor('..\\Test', monitor_level=1)
     monitor.start()
     monitor.join()
     

@@ -83,43 +83,62 @@ class WebshellKiller:
         else:
             return data
     
-    def detect_file(self, fp, fpath):
-        detect_message = None
-        matched_list = self.rules.match(data=self.data_filter(fp.read()),
+    def _detect_internal(self, fpath):
+        with open(fpath, 'rb') as fp: 
+            matched_list = self.rules.match(data=self.data_filter(fp.read()),
                 callback=self.match_filter, which_callbacks=yara.CALLBACK_MATCHES)            
-        if len(matched_list) > 0: 
-            detect_message = '[Webshell] > {0}'.format(fpath)
-            self.file_logger.warning(detect_message + '\r\n')
-            self.cmdx_logger.warning(detect_message)
-        else : 
-            detect_message = 'NormalPage > {0}'.format(fpath)
-            self.cmdx_logger.info(detect_message)
-        return detect_message
-    
-    def detect(self, fpath):
-        try:
-            if not self.load_done: return None
-            with open(fpath, 'rb') as fp: return self.detect_file(fp, fpath)
-        except:
+            detect_result = dict()
+            if len(matched_list) > 0: 
+                detect_message = '[Webshell] > {0}'.format(fpath)
+                self.file_logger.warning(detect_message + '\r\n')
+                self.cmdx_logger.warning(detect_message)
+                detect_result[fpath] = True 
+            else : 
+                detect_message = 'NormalPage > {0}'.format(fpath)
+                self.cmdx_logger.info(detect_message)
+                detect_result[fpath] = False 
+            return detect_result
+        
+    def detect_file(self, fpath):
+        if not self.load_done: 
             return None
+        try:
+            fpath = os.path.abspath(fpath)
+            return self._detect_internal(fpath)
+        except:
+            return None    
         
     def detect_directory(self, dpath, recursive=False):
+        if not self.load_done: 
+            return None
+        detect_results = dict()
         if not recursive:
             for fname in os.listdir(dpath):
                 fpath = os.path.join(dpath, fname)
                 if os.path.isfile(fpath): 
-                    self.detect(fpath)
+                    detect_result = self.detect_file(fpath)
+                    if detect_result:
+                        detect_results.update(detect_result)
         else:
             for root, dirs, files in os.walk(dpath):
                 for fname in files:
                     fpath = os.path.join(root, fname)
-                    self.detect(fpath)
+                    detect_result = self.detect_file(fpath)
+                    if detect_result:
+                        detect_results.update(detect_result)                 
+        return detect_results
         
+    def detect(self, path, recursive=False):    
+        if os.path.isdir(path):
+            return self.detect_directory(path, recursive)
+        else:
+            return self.detect_file(path)
+
     #warning: please do not kill file casually, be a gentle killer. 
     def kill(self, fpath):
         os.remove(fpath)
 
 if __name__ == '__main__':
     killer = WebshellKiller(r'../Config/JavaWebshellKiller.yar', r'../Log/Webshell.log')
-    killer.detect_directory(r'../Samples/jsp', recursive=True)
-    #killer.detect(r'../Samples/php/w2_dama_140.php')
+    killer.detect(r'../Samples/jsp', recursive=True)
+    #killer.detect(r'../samples/jsp/w1_caidao_3.jsp')
